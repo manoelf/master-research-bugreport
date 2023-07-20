@@ -4,7 +4,7 @@ import matplotlib as plt
 import numpy as np
 import seaborn as sns
 
-from sklearn.metrics import precision_score, confusion_matrix, accuracy_score, recall_score, f1_score, plot_confusion_matrix
+from sklearn.metrics import precision_score, confusion_matrix, accuracy_score, recall_score, f1_score, ConfusionMatrixDisplay
 from sklearn import metrics
 from sklearn.model_selection import GridSearchCV
 
@@ -31,8 +31,9 @@ class Util:
 
 
     def model_confusion_matrix(self, model, x_test, y_test, classes):
-        return plot_confusion_matrix(model, x_test, y_test, labels=classes, cmap=plt.cm.Blues, xticks_rotation = "vertical")
-
+        cm = confusion_matrix(model, x_test, y_test, labels=classes, cmap=plt.cm.Blues, xticks_rotation = "vertical")
+        disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=clf.classes_)
+        return disp.plot()
 
     def compute_metrics(self, pred, y_test):
         accuracy = accuracy_score(y_test, pred)
@@ -41,6 +42,11 @@ class Util:
         f1 = f1_score(y_test, pred, average='weighted')
 
         return {"Metrics": ["Accuracy", "Precision", "Recall", "F1"], "Scores": [accuracy, precision, recall, f1]}
+
+
+    # def train_model(self, model, train_data, train_labels):
+    #     model.fit(train_data, train_labels)
+    #     return model
 
 
     def print_metrics(self, model_name, metrics):

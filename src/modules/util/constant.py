@@ -10,7 +10,17 @@ class Features:
     description = "description"
 
 
-class Models:
+class ModelName:
+    
+    NB = "Naive Bayes"
+    LG = "Logistic Regression"
+    DT = "Decision Tree"
+    RF = "Random Forest"
+    GB = "Gradient Boosting"
+
+
+
+class Model:
 
     NB = GaussianNB()
     LG = LogisticRegression(max_iter=5000)
