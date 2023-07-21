@@ -6,14 +6,9 @@ class TainingModels:
     def __init__(self):
         pass
 
-
-    def get_classification_artifacts(self, train, test):
-        x_train, y_train = train.drop('label', axis=1), train['label']
-        x_test, y_test = test.drop('label', axis=1), test['label']
-        classes = train['label'].unique()
-        
-        return x_train, y_train, x_test, y_test, classes
-
+    # def train_model(self, model, train_data, train_labels):
+    #     model.fit(train_data, train_labels)
+    #     return model
 
     def get_model_metrics(self, model: Model, model_name: ModelName, train, test):
         x_train, y_train, x_test, y_test, classes = get_classification_artifacts(train, test)
