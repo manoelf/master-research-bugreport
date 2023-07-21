@@ -6,6 +6,7 @@ from sklearn.tree import DecisionTreeClassifier
 class Features:
 
     features = ["type", "flags", "assigned_to", "creator", "description", "summary", "id", "creation_time", "last_change_time", "resolution"]
+    train_test_features = ['status_RESOLVED', 'status_VERIFIED', 'changes_status', 'changes_resolution']
     summary = "summary"
     description = "description"
 
