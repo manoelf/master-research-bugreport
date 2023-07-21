@@ -9,9 +9,7 @@ class Balancing:
 
     def oversample(self, data: pd.DataFrame, droped_feature='label', axis=1) -> pd.DataFrame:
         X = data.drop(droped_feature, axis=axis)
-        
         x_ros, y_ros = self.ros.fit_resample(X, data[droped_feature])
-        balanced_data = pd.concat([x_ros, y_ros], axis=axis)
         
-        return balanced_data
+        return pd.concat([x_ros, y_ros], axis=axis)
     
