@@ -3,6 +3,7 @@ import altair as alt
 import matplotlib as plt
 import numpy as np
 import seaborn as sns
+from src.modules.util.constant import Features
 
 from sklearn.metrics import precision_score, confusion_matrix, accuracy_score, recall_score, f1_score, ConfusionMatrixDisplay
 from sklearn import metrics
@@ -35,6 +36,7 @@ class Util:
         disp = ConfusionMatrixDisplay(confusion_matrix=cm, display_labels=clf.classes_)
         return disp.plot()
 
+
     def compute_metrics(self, pred, y_test):
         accuracy = accuracy_score(y_test, pred)
         precision = precision_score(y_test, pred, average='weighted')
@@ -42,11 +44,6 @@ class Util:
         f1 = f1_score(y_test, pred, average='weighted')
 
         return {"Metrics": ["Accuracy", "Precision", "Recall", "F1"], "Scores": [accuracy, precision, recall, f1]}
-
-
-    # def train_model(self, model, train_data, train_labels):
-    #     model.fit(train_data, train_labels)
-    #     return model
 
 
     def print_metrics(self, model_name, metrics):
@@ -151,4 +148,18 @@ class Util:
     def rename_column(self, data: pd.DataFrame, column_name: str, new_column_name: str):
         data[new_column_name] = data[column_name]
         data.drop(column_name, axis=1)
+        return data
         
+    
+    def remove_feature(self, data: pd.DataFrame, features=Features.features, inplace=False, axis=1):
+        data.drop(features, inplace=inplace, axis=axis)
+
+        return data
+    
+
+    def get_classification_artifacts(self, train, test):
+        x_train, y_train = train.drop('label', axis=1), train['label']
+        x_test, y_test = test.drop('label', axis=1), test['label']
+        classes = train['label'].unique()
+        
+        return x_train, y_train, x_test, y_test, classes
