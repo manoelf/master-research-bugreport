@@ -1,6 +1,6 @@
 import pandas as pd
 from tokenize import tokenize
-from src.util.constant import Features
+from src.modules.util.constant import Features
 
 
 class Preprocess:

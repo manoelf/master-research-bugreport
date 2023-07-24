@@ -2,6 +2,8 @@ from sklearn.naive_bayes import GaussianNB
 from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.tree import DecisionTreeClassifier
+from sklearn.model_selection import RepeatedStratifiedKFold
+from imblearn.over_sampling import RandomOverSampler
 
 
 class Features:
@@ -10,6 +12,11 @@ class Features:
     train_test_features = ['status_RESOLVED', 'status_VERIFIED', 'changes_status', 'changes_resolution']
     summary = "summary"
     description = "description"
+
+
+class DataShowMetrics:
+    
+    columns={"index": "Resolution", "label": "Total"}
 
 
 class ModelName:
@@ -22,9 +29,11 @@ class ModelName:
 
 
 class Model:
-    #melhor instanciar fora por causa do parametro
+
     NB = GaussianNB()
     LG = LogisticRegression(max_iter=5000)
     DT = DecisionTreeClassifier()
     RF = RandomForestClassifier(random_state=42)
     GB = GradientBoostingClassifier(random_state=0)
+    CV = RepeatedStratifiedKFold(n_splits=10, n_repeats=3, random_state=1)
+    ROS = RandomOverSampler()

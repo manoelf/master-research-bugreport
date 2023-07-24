@@ -1,13 +1,13 @@
 from numpy import mean, std
-from sklearn.model_selection import cross_val_score, RepeatedStratifiedKFold
-
+from sklearn.model_selection import cross_val_score
+from src.modules.util.constant import Model
 
 class CrossValidation:
 
     def __init__(self):
-        cv = RepeatedStratifiedKFold(n_splits=10, n_repeats=3, random_state=1)
+        pass
 
 
-    def get_cross_validation_result(self, model, x_train, y_train):
-        n_scores = cross_val_score(model, x_train, y_train, scoring='accuracy', cv=self.cv, n_jobs=-1, error_score='raise')
-        return 'Accuracy: %.3f (%.3f)' % (mean(n_scores), std(n_scores))
+    def get_cross_validation_result(self, model, x_train, y_train, scoring='accuracy', cv=Model.CV, n_jobs=-1, error_score='raise'):
+        n_scores = cross_val_score(model, x_train, y_train, scoring=scoring, cv=cv, n_jobs=n_jobs, error_score=error_score)
+        return '%: %.3f (%.3f)' % scoring, (mean(n_scores), std(n_scores))
