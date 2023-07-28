@@ -1,6 +1,5 @@
 from src.modules.util.util import DataUtil as util
 from src.modules.util.constant import Model, ModelName
-from modules.pipeline.training import get_classification_artifacts
 import pickle
 
 class Finetunning:
