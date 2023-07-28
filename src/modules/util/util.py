@@ -1,14 +1,15 @@
 import pandas as pd
 import altair as alt
-import matplotlib as plt
 import numpy as np
 import seaborn as sns
+import time
+import csv
 
 from collections import defaultdict
-from constant import ModelName as mn, DataShowMetrics as ds
+from constant import ModelName as mn, DataShowMetrics as ds, Features
 from src.modules.pipeline.training import TainingModels as tm
 
-from sklearn.metrics import precision_score, confusion_matrix, accuracy_score, recall_score, f1_score, classification_report
+from sklearn.metrics import precision_score, confusion_matrix, accuracy_score, recall_score, f1_score, classification_report, roc_auc_score
 from sklearn.model_selection import GridSearchCV
 
 
@@ -46,8 +47,9 @@ class DataUtil:
         precision = precision_score(y_test, pred, average=average)
         recall = recall_score(y_test, pred, average=average)
         f1 = f1_score(y_test, pred, average=average)
+        auc = roc_auc_score(y_test, pred)
 
-        return {"Metrics": ["Accuracy", "Precision", "Recall", "F1"], "Scores": [accuracy, precision, recall, f1]}
+        return {"Metrics": ["Accuracy", "Precision", "Recall", "F1", "AUC"], "Scores": [accuracy, precision, recall, f1, auc]}
         
 
     def get_classification_artifacts(self, train, test, label='label'):
@@ -66,13 +68,19 @@ class DataUtil:
 
 
     def get_metrics(self, model, model_name, x_train, y_train, x_test, y_test, classes):
+        initial_time = time.time()
+        
         model = tm.train_model(model, x_train, y_train)
         pred = tm.predict_model(x_test)
         metrics = DataUtil.compute_metrics(pred,  y_test)
-        self.show_metrics(model, model_name, metrics, x_test, y_test, classes)
-        self.show_metrics_per_class(pred, y_test)
+        
+        final_time = time.time() - initial_time
 
-        return metrics['Scores']
+        ShowMetrics.show_metrics(model, model_name, metrics, x_test, y_test, classes)
+        # ShowMetrics.show_metrics_per_class(pred, y_test)
+        ShowMetrics.plot_model_confusion_matrix(y_test, pred, classes)
+        
+        return metrics['Scores'], final_time
 
 
     def get_models_metric_data(self, models):
@@ -100,11 +108,26 @@ class DataUtil:
         grid = tm.train_model(x_train, y_train)
         pred = tm.predict_model(x_test)
 
-        self.show_best_params(model_name, grid, folds)
+        ShowMetrics.show_best_params(model_name, grid, folds)
         metrics = DataUtil.compute_metrics(pred, y_test)
-        self.show_metrics(grid, model_name, metrics, x_test, y_test, classes)
+        ShowMetrics.show_metrics(grid, model_name, metrics, x_test, y_test, classes)
 
         return metrics['Scores'], pred
+    
+
+    def remove_features(self, data, features=Features.features, inplace=False, axis=1):
+        data = data.drop(features, inplace=inplace, axis=axis)
+        return data
+    
+    
+    def save_result(self, metrics, time, model_name, file_name='result.csv'):
+        accuracy, precision, recall, f1, auc = metrics[0], metrics[1], metrics[2], metrics[3], metrics[4] 
+        model_data = [accuracy, precision, recall, f1, auc, time]
+        path = 'src/data/' + model_name + '/' + file_name
+
+        with open(path, mode='a', newline='') as csv_file:
+            escritor_csv = csv.writer(csv_file, delimiter=';')
+            escritor_csv.writerow(model_data)
 
 
 
@@ -121,9 +144,7 @@ class ShowMetrics:
         return alt.Chart(df).mark_bar().encode(x=alt.X(x_label, sort='-y'), y=y_label, color = alt.value(color_value))
 
 
-    def plot_model_confusion_matrix(self, x_train, y_train, x_test, y_test, pred, classes):
-        model = tm.train_model(model, x_train, y_train)
-        pred = tm.predict_model(x_test)
+    def plot_model_confusion_matrix(self, y_test, pred, classes):
         cm = confusion_matrix(y_test, pred)
         cm_array_df = pd.DataFrame(
             cm,
