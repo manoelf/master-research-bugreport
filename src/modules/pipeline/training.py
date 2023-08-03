@@ -1,4 +1,4 @@
-from src.modules.util.util import DataUtil as util
+from src.modules.util.util import Util as util
 from src.modules.util.constant import Model, ModelName
 
 class TainingModels:

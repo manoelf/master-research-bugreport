@@ -6,14 +6,14 @@ import time
 import csv
 
 from collections import defaultdict
-from constant import ModelName as mn, DataShowMetrics as ds, Features
+from src.modules.util.constant import ModelName as mn, DataShowMetrics as ds, Features
 from src.modules.pipeline.training import TainingModels as tm
 
 from sklearn.metrics import precision_score, confusion_matrix, accuracy_score, recall_score, f1_score, classification_report, roc_auc_score
 from sklearn.model_selection import GridSearchCV
 
 
-class DataUtil:
+class Util:
 
     def __init__(self):
 
@@ -72,7 +72,7 @@ class DataUtil:
         
         model = tm.train_model(model, x_train, y_train)
         pred = tm.predict_model(x_test)
-        metrics = DataUtil.compute_metrics(pred,  y_test)
+        metrics = Util.compute_metrics(pred,  y_test)
         
         final_time = time.time() - initial_time
 
@@ -109,7 +109,7 @@ class DataUtil:
         pred = tm.predict_model(x_test)
 
         ShowMetrics.show_best_params(model_name, grid, folds)
-        metrics = DataUtil.compute_metrics(pred, y_test)
+        metrics = Util.compute_metrics(pred, y_test)
         ShowMetrics.show_metrics(grid, model_name, metrics, x_test, y_test, classes)
 
         return metrics['Scores'], pred
