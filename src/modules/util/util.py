@@ -6,11 +6,11 @@ import time
 import csv
 
 from collections import defaultdict
+from sklearn.metrics import confusion_matrix, classification_report
+from sklearn.model_selection import GridSearchCV
 from src.modules.util.constant import ModelName as mn, DataShowMetrics as ds, Features
 from src.modules.pipeline.training import TainingModels as tm
-
-from sklearn.metrics import precision_score, confusion_matrix, accuracy_score, recall_score, f1_score, classification_report, roc_auc_score
-from sklearn.model_selection import GridSearchCV
+from src.modules.util.helper_metrics import MetricsHelper as mh
 
 
 class Util:
@@ -40,24 +40,6 @@ class Util:
 
     def get_params(self, model_name):
         return self.model_params[model_name]
-
-
-    def compute_metrics(self, pred, y_test, average='weighted'):
-        accuracy = accuracy_score(y_test, pred)
-        precision = precision_score(y_test, pred, average=average)
-        recall = recall_score(y_test, pred, average=average)
-        f1 = f1_score(y_test, pred, average=average)
-        auc = roc_auc_score(y_test, pred)
-
-        return {"Metrics": ["Accuracy", "Precision", "Recall", "F1", "AUC"], "Scores": [accuracy, precision, recall, f1, auc]}
-        
-
-    def get_classification_artifacts(self, train, test, label='label'):
-        x_train, y_train = train.drop(label, axis=1), train[label]
-        x_test, y_test = test.drop(label, axis=1), test[label]
-        classes = train[label].unique()
-        
-        return x_train, y_train, x_test, y_test, classes
     
 
     def rename_column(self, data: pd.DataFrame, column_name: str, new_column_name: str):
@@ -72,7 +54,7 @@ class Util:
         
         model = tm.train_model(model, x_train, y_train)
         pred = tm.predict_model(x_test)
-        metrics = Util.compute_metrics(pred,  y_test)
+        metrics = mh.compute_metrics(pred,  y_test)
         
         final_time = time.time() - initial_time
 
@@ -109,7 +91,7 @@ class Util:
         pred = tm.predict_model(x_test)
 
         ShowMetrics.show_best_params(model_name, grid, folds)
-        metrics = Util.compute_metrics(pred, y_test)
+        metrics = mh.compute_metrics(pred, y_test)
         ShowMetrics.show_metrics(grid, model_name, metrics, x_test, y_test, classes)
 
         return metrics['Scores'], pred
