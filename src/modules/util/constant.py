@@ -8,8 +8,9 @@ from imblearn.over_sampling import RandomOverSampler
 
 class Features:
 
-    features = ["type", "flags", "assigned_to", "creator", "description", "summary", "id", "creation_time", "last_change_time", "resolution"]
-    train_test_features = ['status_RESOLVED', 'status_VERIFIED', 'changes_status', 'changes_resolution']
+    features = ["type", "flags", "assigned_to", "creator", "description", "summary", "id", "creation_time", "last_change_time"]
+    train_test_features = ['status', 'changes_status', 'changes_resolution']
+    # 'status_RESOLVED', 'status_VERIFIED'
     summary = "summary"
     description = "description"
 
@@ -31,7 +32,7 @@ class ModelName:
 class Model:
 
     NB = GaussianNB()
-    LG = LogisticRegression(max_iter=5000)
+    LG = LogisticRegression(multi_class='multinomial', solver='lbfgs', max_iter=5000)
     DT = DecisionTreeClassifier()
     RF = RandomForestClassifier(random_state=42)
     GB = GradientBoostingClassifier(random_state=0)

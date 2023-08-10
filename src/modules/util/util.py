@@ -49,18 +49,18 @@ class Util:
         return data
 
 
-    def get_metrics(self, model, model_name, x_train, y_train, x_test, y_test, classes):
+    def get_metrics(self, model, model_name, x_train, y_train, x_test, y_test):
         initial_time = time.time()
         
-        model = tm.train_model(model, x_train, y_train)
-        pred = tm.predict_model(x_test)
-        metrics = mh.compute_metrics(pred,  y_test)
+        model = tm().train_model(model, x_train, y_train)
+        pred = tm().predict_model(x_test)
+        metrics = mh().compute_metrics(pred,  y_test)
         
         final_time = time.time() - initial_time
 
-        ShowMetrics.show_metrics(model, model_name, metrics, x_test, y_test, classes)
+        ShowMetrics().show_metrics(model, model_name, metrics, x_test, y_test)
         # ShowMetrics.show_metrics_per_class(pred, y_test)
-        ShowMetrics.plot_model_confusion_matrix(y_test, pred, classes)
+        ShowMetrics().plot_model_confusion_matrix(y_test, pred)
         
         return metrics['Scores'], final_time
 
@@ -97,7 +97,7 @@ class Util:
         return metrics['Scores'], pred
     
 
-    def remove_features(self, data, features=Features.features, inplace=False, axis=1):
+    def remove_features(self, data, features=Features.train_test_features, inplace=False, axis=1):
         data = data.drop(features, inplace=inplace, axis=axis)
         return data
     

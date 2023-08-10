@@ -1,6 +1,7 @@
 import pandas as pd
 from tokenize import tokenize
 from src.modules.util.constant import Features
+from src.modules.util.util import Util
 
 
 class Preprocess:
@@ -10,11 +11,8 @@ class Preprocess:
 
 
     def fill_null_values(self, data: pd.DataFrame, feature: Features, inplace=True, axis=1):
-        if feature == Features.description:
-            data = Features.rename_column(data, 'total_words_desc', 'total_words_description')
-            
         data[feature].fillna('', inplace=inplace)
-        data['total_words_' + feature] = data.apply(lambda row: len(list(tokenize(row[feature]))), axis=axis)
+        data[f'total_words_{feature}'] = data.apply(lambda row: len(list(tokenize(row[feature]))), axis=axis)
         
         return data
     
