@@ -53,14 +53,16 @@ class Util:
         initial_time = time.time()
         
         model = tm().train_model(model, x_train, y_train)
-        pred = tm().predict_model(x_test)
-        metrics = mh().compute_metrics(pred,  y_test)
+        pred = tm().predict_model(model, x_test)
+        pred = pd.DataFrame(pred).iloc[:-6]
+
+        metrics = mh().compute_metrics(pred, y_test)
         
         final_time = time.time() - initial_time
 
         ShowMetrics().show_metrics(model, model_name, metrics, x_test, y_test)
-        # ShowMetrics.show_metrics_per_class(pred, y_test)
         ShowMetrics().plot_model_confusion_matrix(y_test, pred)
+        print(f'time: {final_time}')
         
         return metrics['Scores'], final_time
 
