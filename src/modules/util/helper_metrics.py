@@ -1,4 +1,5 @@
 from sklearn.metrics import precision_score,  accuracy_score, recall_score, f1_score, roc_auc_score
+from sklearn.preprocessing import label_binarize
 
 class MetricsHelper:
 
@@ -14,11 +15,19 @@ class MetricsHelper:
         return x_train, y_train, x_test, y_test, classes
     
 
-    def compute_metrics(self, pred, y_test, average='weighted'):
+    def compute_metrics(self, pred, y_test, predict_prob, average='weighted'):
+        
         accuracy = accuracy_score(y_test, pred)
-        precision = precision_score(y_test, pred, average=average)
+        precision = precision_score(y_test, pred, average=average, zero_division=0)
         recall = recall_score(y_test, pred, average=average)
         f1 = f1_score(y_test, pred, average=average)
-        auc = roc_auc_score(y_test, pred)
+        
+        classes = list(y_test)
+        y_true = label_binarize(y_test, classes=classes)
+        
+        y_scores = predict_prob.reshape(-1, 1)
+        y_true = y_true.reshape(-1, len(classes))
+        
+        auc = roc_auc_score(y_true, y_scores, average=None)
 
-        return {"Metrics": ["Accuracy", "Precision", "Recall", "F1", "AUC"], "Scores": [accuracy, precision, recall, f1, auc]}
+        return {"Metrics": ["Accuracy", "Precision", "Recall", "F1", "AUC"], "Scores": [accuracy, precision, recall, f1, auc[0]]}

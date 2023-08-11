@@ -5,6 +5,7 @@ import seaborn as sns
 import time
 import csv
 
+from sklearn import metrics
 from collections import defaultdict
 from sklearn.metrics import confusion_matrix, classification_report
 from sklearn.model_selection import GridSearchCV
@@ -49,22 +50,24 @@ class Util:
         return data
 
 
-    def get_metrics(self, model, model_name, x_train, y_train, x_test, y_test):
+    def get_metrics(self, model, model_name, x_train, y_train, x_test, y_test, classes):
         initial_time = time.time()
         
         model = tm().train_model(model, x_train, y_train)
         pred = tm().predict_model(model, x_test)
-        pred = pd.DataFrame(pred).iloc[:-6]
 
-        metrics = mh().compute_metrics(pred, y_test)
+        predicted_probabilities = model.predict_proba(x_test)[:, 1]
+        metrics = mh().compute_metrics(pred, y_test, predicted_probabilities)
         
         final_time = time.time() - initial_time
 
-        ShowMetrics().show_metrics(model, model_name, metrics, x_test, y_test)
-        ShowMetrics().plot_model_confusion_matrix(y_test, pred)
+        ShowMetrics().show_metrics(model_name, metrics)
+        ShowMetrics().plot_model_confusion_matrix(y_test, pred, classes)
+        ShowMetrics().show_metrics_per_class(pred, y_test)
+
         print(f'time: {final_time}')
         
-        return metrics['Scores'], final_time
+        return metrics['Scores']
 
 
     def get_models_metric_data(self, models):
@@ -86,15 +89,15 @@ class Util:
     
 
     def get_tuned_metrics(self, model, model_name, folds, x_train, y_train, x_test, y_test, classes):
-        params = self.get_params(model_name)
+        params = self.get_params(model_name, deep=True)
 
-        grid = GridSearchCV(model, params, cv=folds)
-        grid = tm.train_model(x_train, y_train)
-        pred = tm.predict_model(x_test)
+        grid = GridSearchCV(model, params, cv = folds)
+        grid.fit(x_train, y_train)
+        pred = grid.predict(x_test)
 
-        ShowMetrics.show_best_params(model_name, grid, folds)
-        metrics = mh.compute_metrics(pred, y_test)
-        ShowMetrics.show_metrics(grid, model_name, metrics, x_test, y_test, classes)
+        ShowMetrics().show_best_params(model_name, grid, folds)
+        metrics = mh().compute_metrics(pred, y_test)
+        ShowMetrics().show_metrics(grid, model_name, metrics, x_test, y_test, classes)
 
         return metrics['Scores'], pred
     
@@ -151,14 +154,18 @@ class ShowMetrics:
 
     def show_metrics(self, model_name, metrics):
         print(f"{model_name} Metrics:\n")
-        for i in range(4):
+        for i in range(5):
             print(f"{metrics['Metrics'][i]} score is:\t{round(metrics['Scores'][i] * 100,2)}%")
         print("\n")
 
 
-    def show_metrics_per_class(self, pred, y_test, classes, digits=2):
+    def show_metrics_per_class(self, pred, y_test, digits=2):
+
+        print(metrics.confusion_matrix(y_test, pred))
+
+        print(metrics.classification_report(y_test, pred, digits=digits))
         # return the confusion matrix and the precision and recall, among other metrics
-        return confusion_matrix(y_test, pred, classes), classification_report(y_test, pred, digits=digits)
+        # return confusion_matrix(y_test, pred, classes), classification_report(y_test, pred, digits=digits)
 
 
     def plot_metric_graph(self, data, kind='bar', x="Metric", y="Metric Score", hue="Model", ci="sd", alpha=.6, height=6, x_ylim=0, y_ylim=100, left=True):
