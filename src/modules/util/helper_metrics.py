@@ -31,3 +31,5 @@ class MetricsHelper:
         auc = roc_auc_score(y_true, y_scores, average=None)
 
         return {"Metrics": ["Accuracy", "Precision", "Recall", "F1", "AUC"], "Scores": [accuracy, precision, recall, f1, auc[0]]}
+
+    

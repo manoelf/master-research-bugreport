@@ -24,7 +24,14 @@ class Util:
             }
         
         self.model_params = defaultdict(lambda: default_params)
-        self.model_params[mn.LG] = {'C': [0.0001, 0.001, 0.01, 0.1, 1.0, 10.0, 100.0, 1000.0, 10000.0, 100000.0]}
+        self.model_params[mn.NB] = {
+            'var_smoothing': np.logspace(0,-9, num=10)
+            }
+        self.model_params[mn.LG] = {
+            'C': [0.0001, 0.001, 0.01, 0.1, 1.0, 10.0, 100.0, 1000.0, 10000.0, 100000.0], 
+            'multi_class':['multinomial'], 
+            'solver':['lbfgs']
+            }
         self.model_params[mn.GB] = {
                 'n_estimators': [50, 100],
                 'max_depth': [3, 8],
@@ -89,15 +96,23 @@ class Util:
     
 
     def get_tuned_metrics(self, model, model_name, folds, x_train, y_train, x_test, y_test, classes):
-        params = self.get_params(model_name, deep=True)
+        initial_time = time.time()
+
+        params = self.get_params(model_name)
 
         grid = GridSearchCV(model, params, cv = folds)
         grid.fit(x_train, y_train)
         pred = grid.predict(x_test)
 
-        ShowMetrics().show_best_params(model_name, grid, folds)
-        metrics = mh().compute_metrics(pred, y_test)
-        ShowMetrics().show_metrics(grid, model_name, metrics, x_test, y_test, classes)
+        predicted_probabilities = model.predict_proba(x_test)[:, 1]
+        metrics = mh().compute_metrics(pred, y_test, predicted_probabilities)
+        
+        final_time = time.time() - initial_time
+
+        ShowMetrics().show_best_params(model_name, grid, folds)        
+        ShowMetrics().show_metrics(model_name, metrics)
+
+        print(f'time: {final_time}')
 
         return metrics['Scores'], pred
     
@@ -107,9 +122,9 @@ class Util:
         return data
     
     
-    def save_result(self, metrics, time, model_name, file_name='result.csv'):
+    def save_result(self, metrics, model_name, file_name='result.csv'):
         accuracy, precision, recall, f1, auc = metrics[0], metrics[1], metrics[2], metrics[3], metrics[4] 
-        model_data = [accuracy, precision, recall, f1, auc, time]
+        model_data = [accuracy, precision, recall, f1, auc]
         path = 'src/data/' + model_name + '/' + file_name
 
         with open(path, mode='a', newline='') as csv_file:
@@ -149,7 +164,8 @@ class ShowMetrics:
             print(f'Best min sample split: {grid.best_params_["min_samples_split"]}. Best min sample leaf: {grid.best_params_["min_samples_leaf"]}')
             print(f'Best max features: {grid.best_params_["max_features"]}. Best subsample: {grid.best_params_["subsample"]}')
         else:
-            print(f'Best depth: {grid.best_params_["max_depth"]}. Best number of leafs: {grid.best_params_["max_leaf_nodes"]}')
+            if(model_name != mn.NB):
+                print(f'Best depth: {grid.best_params_["max_depth"]}. Best number of leafs: {grid.best_params_["max_leaf_nodes"]}')
 
 
     def show_metrics(self, model_name, metrics):
